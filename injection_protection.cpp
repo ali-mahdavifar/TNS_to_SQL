@@ -5,6 +5,124 @@
 
 
 
+string place_arguments(string input) {
+
+    if(input.find("with") == string::npos) {
+        return input;
+    }
+
+    map<string, string> arguments = arguments_to_place(input);
+
+    input = cut_the_argument_part(input);
+
+    string res = replace_arguments_and_add_braces(input, arguments);
+
+    bool ok = check_for_injection_and_remove_braces(res);
+
+    if(!ok) {
+        return "Error:{query suspected for injection}";
+    }
+
+    return res;
+}
+
+
+map<string, string> arguments_to_place(string input) {
+
+    string part1, part2;
+    int index = input.find("with");
+    for(int i = 0; i < index; i++) {
+        part1.push_back(input[i]);
+    }
+    for(int i = index + 4; i < input.size(); i++) {
+        part2.push_back(input[i]);
+    }
+
+    map<string, string> arguments;
+    auto sep = seperate_by_commas(part2);
+    for(auto elem : sep) {
+        int i = 0;
+        while(true) {
+            if(elem[i] == '@') {
+                break;
+            }
+            i++;
+        }
+        // elem[i] == '@'
+        string temp1 = "@";
+        i++;
+        while(true) {
+            if(elem[i] == ' ' || elem[i] == '=') {
+                break;
+            }
+            temp1.push_back(elem[i]);
+            i++;
+        }
+        while(true) {
+            if(elem[i] != ' ' && elem[i] != '=') {
+                break;
+            }
+            i++;
+        }
+        string temp2;
+        while(true) {
+            if(elem[i] == ' ' || elem[i] == ',' || elem[i] == ';' || i >= elem.size()) {
+                break;
+            }
+            temp2.push_back(elem[i]);
+            i++;
+        }
+        arguments.insert(make_pair(temp1, temp2));
+    }
+
+    return arguments;
+}
+
+string cut_the_argument_part(string input) {
+
+    int pos = input.find("with");
+    string res;
+    for(int i = 0; i < pos; i++) {
+        res.push_back(input[i]);
+    }
+    res.push_back(';');
+    return res;
+}
+
+
+string replace_arguments_and_add_braces(string input, map<string, string> arguments) {
+
+//    string res;
+//    int i = 0;
+    srand(time(0));
+
+    for(auto it = arguments.begin(); it != arguments.end(); it++) {
+        string key = it -> first;
+        string value = it -> second;
+        int pos1 = input.find(key);
+        int pos2 = pos1 + key.size();
+        string temp;
+        for(int i = 0; i < pos1; i++) {
+            temp.push_back(input[i]);
+        }
+        int random = rand() % 1000000;
+        temp.push_back('{');
+        temp += to_string(random);
+        temp.push_back('{');
+        temp += value;
+        temp.push_back('}');
+        temp += to_string(random);
+        temp.push_back('}');
+        for(int i = pos2; i < input.size(); i++) {
+            temp.push_back(input[i]);
+        }
+        input = temp;
+    }
+
+    return input;
+}
+
+
 bool check_for_injection_and_remove_braces(string& tns_query) {
     // 1- find begin and end indices for curly braced passkeys.
     // 2- find begin and end indices for from and where words.

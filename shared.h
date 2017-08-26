@@ -11,6 +11,8 @@
 #include<utility>
 #include<algorithm>
 #include<stack>
+#include<cstdlib>
+#include<ctime>
 #include "format.h"
 using namespace std;
 
@@ -154,8 +156,13 @@ string last_reference(string compound);
 
 string drep_vector_string(vector<string> input);
 
+string place_arguments(string input);
 
+map<string, string> arguments_to_place(string input);
 
+string cut_the_argument_part(string input);
+
+string replace_arguments_and_add_braces(string input, map<string, string> arguments);
 
 
 // Global Data

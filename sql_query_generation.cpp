@@ -11,10 +11,12 @@ string generate_sql_query(string tns_query) {
         return "Error:{there are unapplied changes}";
     }
 
-    bool ok = check_for_injection_and_remove_braces(tns_query);
-    if(!ok) {
-        return "Error:{query suspected for injection}";
-    }
+//    bool ok = check_for_injection_and_remove_braces(tns_query);
+//    if(!ok) {
+//        return "Error:{query suspected for injection}";
+//    }
+
+    tns_query = place_arguments(tns_query);
 
     string select_part, from_part, where_part;
     parse_to_phases(tns_query, select_part, from_part, where_part);
